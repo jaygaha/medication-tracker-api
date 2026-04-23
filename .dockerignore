@@ -1,0 +1,16 @@
+.git
+.gitignore
+.env
+.env.local
+tmp/
+vendor/
+node_modules/
+dist/
+.DS_Store
+*.log
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.air.log
