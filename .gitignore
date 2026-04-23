@@ -1,0 +1,40 @@
+# Binaries
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+bin/
+main
+
+# Test and Coverage
+*.test
+*.out
+coverage.txt
+
+# Dependency directories
+vendor/
+
+# Go workspace
+go.work
+go.work.sum
+
+# Env files
+.env
+.env.local
+.env.*.local
+
+# IDE-specific
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Live Reload (Air)
+tmp/
+
+# OS-specific
+.DS_Store
+
+# Swagger Docs (Generated in container)
+docs/
