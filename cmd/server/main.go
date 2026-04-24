@@ -45,15 +45,18 @@ func main() {
 
 	// initialize repositories
 	medRepo := repository.NewMedicationRepository(db)
+	scheduleRepo := repository.NewScheduleRepository(db)
 
 	// Initialize services
 	medService := service.NewMedicationService(medRepo)
+	scheduleService := service.NewScheduleService(scheduleRepo, medRepo)
 
 	// Initialize handlers
 	medHandler := handler.NewMedicationHandler(medService)
+	scheduleHandler := handler.NewScheduleHandler(scheduleService)
 
 	// Initialize router
-	router := routes.SetupRouter(medHandler)
+	router := routes.SetupRouter(medHandler, scheduleHandler)
 
 	// Initialize swagger
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
