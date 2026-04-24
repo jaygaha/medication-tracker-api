@@ -9,7 +9,6 @@ import (
 	"strconv"
 
 	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
 	"github.com/jaygaha/medication-tracker-api/internal/errors"
 	"github.com/jaygaha/medication-tracker-api/internal/models"
 	"github.com/jaygaha/medication-tracker-api/internal/service"
@@ -49,7 +48,6 @@ func (h *MedicationHandler) CreateMedication(c *gin.Context) {
 	userID := c.GetString("user_id")
 
 	med := &models.Medication{
-		ID:            uuid.NewString(),
 		UserID:        userID,
 		Name:          req.Name,
 		Form:          req.Form,
@@ -58,9 +56,14 @@ func (h *MedicationHandler) CreateMedication(c *gin.Context) {
 		RxNumber:      req.RxNumber,
 		Notes:         req.Notes,
 		Status:        req.Status,
+		Visuals:       req.Visuals,
 	}
 
 	if err := h.medService.CreateMedication(c.Request.Context(), med); err != nil {
+		if _, ok := err.(*errors.ValidationError); ok {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
@@ -71,13 +74,13 @@ func (h *MedicationHandler) CreateMedication(c *gin.Context) {
 // GetMedication godoc
 //
 // @Summary Get medication by id
-// @Description get a medication by id
+// @Description get a medication by id with its visual properties
 // @Tags Medications
 // @Accept json
 // @Produce json
 // @Param id path string true "Medication ID"
 // @Success 200 {object} models.Medication
-// @Failure 400 {object} map[string]interface{}
+// @Failure 404 {object} map[string]interface{}
 // @Failure 500 {object} map[string]interface{}
 // @Router /medications/{id} [get]
 func (h *MedicationHandler) GetMedication(c *gin.Context) {
@@ -97,7 +100,7 @@ func (h *MedicationHandler) GetMedication(c *gin.Context) {
 // ListMedication godoc
 //
 // @Summary List medications for a user
-// @Description list medications for a user
+// @Description list medications for a user including visuals
 // @Tags Medications
 // @Accept json
 // @Produce json
@@ -132,8 +135,6 @@ func (h *MedicationHandler) ListMedication(c *gin.Context) {
 	// Allowed order by
 	allowedOrderBy := []string{"name", "form", "strength_value", "strength_unit", "rx_number", "notes", "status", "created_at", "updated_at"}
 	if !slices.Contains(allowedOrderBy, orderBy) {
-		// AbortWithStatusJSON: the standard for Authentication, Authorization, and Validation.
-		// It prevents the request from going any further than it needs to, saving unnecessary processing and resources.
 		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "Invalid order by"})
 		return
 	}
@@ -149,7 +150,6 @@ func (h *MedicationHandler) ListMedication(c *gin.Context) {
 
 	medications, err := h.medService.ListMedications(c.Request.Context(), userID, limit, offset, orderBy, orderDir)
 	if err != nil {
-		// This is the standard inside your actual Controller/Handler functions once you've already passed all middleware.
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
@@ -163,7 +163,7 @@ func (h *MedicationHandler) ListMedication(c *gin.Context) {
 // UpdateMedication godoc
 //
 // @Summary Update medication by id
-// @Description update a medication by id
+// @Description update a medication by id including visuals
 // @Tags Medications
 // @Accept json
 // @Produce json
@@ -171,6 +171,7 @@ func (h *MedicationHandler) ListMedication(c *gin.Context) {
 // @Param medication body models.CreateMedicationRequest true "Medication"
 // @Success 200 {object} models.Medication
 // @Failure 400 {object} map[string]interface{}
+// @Failure 404 {object} map[string]interface{}
 // @Failure 500 {object} map[string]interface{}
 // @Router /medications/{id} [put]
 func (h *MedicationHandler) UpdateMedication(c *gin.Context) {
@@ -190,9 +191,22 @@ func (h *MedicationHandler) UpdateMedication(c *gin.Context) {
 		RxNumber:      req.RxNumber,
 		Notes:         req.Notes,
 		Status:        req.Status,
+		Visuals:       req.Visuals,
+	}
+
+	if med.Visuals != nil {
+		med.Visuals.MedicationID = id
 	}
 
 	if err := h.medService.UpdateMedication(c.Request.Context(), med); err != nil {
+		if _, ok := err.(*errors.ValidationError); ok {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+		if _, ok := err.(*errors.NotFoundError); ok {
+			c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+			return
+		}
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}

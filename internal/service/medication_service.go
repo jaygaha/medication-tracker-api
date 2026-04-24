@@ -3,7 +3,6 @@ package service
 
 import (
 	"context"
-	"fmt"
 	"time"
 
 	"github.com/google/uuid"
@@ -32,9 +31,14 @@ func (s *MedicationService) CreateMedication(ctx context.Context, med *models.Me
 	med.CreatedAt = time.Now()
 	med.UpdatedAt = time.Now()
 
+	// Link visuals if provided
+	if med.Visuals != nil {
+		med.Visuals.MedicationID = med.ID
+	}
+
 	// Save to repo
 	if err := s.repo.CreateMedication(ctx, med); err != nil {
-		return fmt.Errorf("failed to create medication: %w", err)
+		return err
 	}
 
 	return nil
@@ -42,12 +46,7 @@ func (s *MedicationService) CreateMedication(ctx context.Context, med *models.Me
 
 // GetMedicationByID gets a medication by ID
 func (s *MedicationService) GetMedicationByID(ctx context.Context, id string) (*models.Medication, error) {
-	med, err := s.repo.GetMedicationByID(ctx, id)
-	if err != nil {
-		return nil, fmt.Errorf("failed to get medication by ID: %w", err)
-	}
-
-	return med, nil
+	return s.repo.GetMedicationByID(ctx, id)
 }
 
 // UpdateMedication updates a medication
@@ -58,21 +57,12 @@ func (s *MedicationService) UpdateMedication(ctx context.Context, med *models.Me
 
 	med.UpdatedAt = time.Now()
 
-	if err := s.repo.UpdateMedication(ctx, med); err != nil {
-		return fmt.Errorf("failed to update medication: %w", err)
-	}
-
-	return nil
+	return s.repo.UpdateMedication(ctx, med)
 }
 
 // DeleteMedication deletes a medication
 func (s *MedicationService) DeleteMedication(ctx context.Context, id string) error {
-
-	if err := s.repo.DeleteMedication(ctx, id); err != nil {
-		return fmt.Errorf("failed to delete medication: %w", err)
-	}
-
-	return nil
+	return s.repo.DeleteMedication(ctx, id)
 }
 
 // ListMedications lists medications for a user
@@ -84,10 +74,5 @@ func (s *MedicationService) ListMedications(ctx context.Context, userID string, 
 		offset = 0
 	}
 
-	medications, err := s.repo.ListMedications(ctx, userID, limit, offset, orderBy, orderDir)
-	if err != nil {
-		return nil, fmt.Errorf("failed to list medications: %w", err)
-	}
-
-	return medications, nil
+	return s.repo.ListMedications(ctx, userID, limit, offset, orderBy, orderDir)
 }
