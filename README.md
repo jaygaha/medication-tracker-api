@@ -47,6 +47,9 @@ The API is stateless, timezone-aware, and designed to back a native mobile or we
 | Feature | Description |
 |---|---|
 | 💊 **Medication Management** | Full CRUD for medications with clinical metadata |
+| 🎨 **Medication Visuals** | CRUD endpoints for `medication_visuals` (shape, colors) via nested models |
+| 🗓 **Schedules API** | Full CRUD for `schedules`, including nested `schedule_days` and `schedule_times` |
+| 📋 **Adherence Logs** | Record and retrieve taken/skipped dose history (`medication_logs`) |
 | 🔍 **Paginated Listing** | Sortable, paginated medication lists |
 | 🩺 **Swagger Docs** | Interactive API documentation at `/swagger/index.html` |
 | 🐳 **Docker Ready** | Full Docker Compose setup with hot reload via Air |
@@ -58,20 +61,15 @@ The following features are **not yet implemented** and will be added incremental
 
 | # | Feature | Description |
 |---|---|---|
-| 1 | 🎨 **Medication Visuals API** | CRUD endpoints for `medication_visuals` (shape, colors) |
-| 2 | 🗓 **Schedules API** | CRUD for `schedules` with support for all `frequency_type` variants |
-| 3 | 📅 **Schedule Days API** | Manage specific weekday entries (`schedule_days`) for day-of-week schedules |
-| 4 | ⏰ **Schedule Times API** | Manage per-dose time and amount entries (`schedule_times`) |
-| 5 | 📋 **Adherence Log API** | Log and retrieve taken/skipped dose history (`medication_logs`) |
-| 6 | ⚠️ **Drug Interactions API** | Store, query, and acknowledge interaction warnings (`drug_interactions`) |
-| 7 | 🔔 **Push Notifications** | Dose reminder alerts via **APNs** (iOS) and **FCM** (Android/Web) |
-| 8 | 🧠 **Smart Notification Scheduling** | Generate notification trigger times from schedules, respecting user timezone |
-| 9 | 👤 **User Auth** | Registration, login, JWT issuance, and token refresh |
-| 10 | 🌏 **Timezone Management** | User-facing endpoint to update timezone preference |
-| 11 | ⚡ **Redis Caching** | Cache frequently read data (medication lists, schedules) using the provisioned Redis service |
-| 12 | 📊 **Adherence Stats** | Aggregated adherence rates and streaks for charts/calendars |
+| 1 | ⚠️ **Drug Interactions API** | Store, query, and acknowledge interaction warnings (`drug_interactions`) |
+| 2 | 🔔 **Push Notifications** | Dose reminder alerts via **APNs** (iOS) and **FCM** (Android/Web) |
+| 3 | 🧠 **Smart Notification Scheduling** | Generate notification trigger times from schedules, respecting user timezone |
+| 4 | 👤 **User Auth** | Registration, login, JWT issuance, and token refresh |
+| 5 | 🌏 **Timezone Management** | User-facing endpoint to update timezone preference |
+| 6 | ⚡ **Redis Caching** | Cache frequently read data (medication lists, schedules) using the provisioned Redis service |
+| 7 | 📊 **Adherence Stats** | Aggregated adherence rates and streaks for charts/calendars |
 
-> **Next up:** Items **1–6** (full schema coverage) followed by **7–8** (notification alerts). See the [open issues](https://github.com/jaygaha/medication-tracker-api/issues) for progress.
+> **Next up:** Item **1** (Drug Interactions API) followed by **2–3** (notification alerts). See the [open issues](https://github.com/jaygaha/medication-tracker-api/issues) for progress.
 
 ---
 

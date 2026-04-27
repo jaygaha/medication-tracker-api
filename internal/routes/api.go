@@ -28,6 +28,7 @@ func HealthCheck(c *gin.Context) {
 func SetupRouter(
 	medicationHandler *handler.MedicationHandler,
 	scheduleHandler *handler.ScheduleHandler,
+	logHandler *handler.LogHandler,
 ) *gin.Engine {
 	gin.SetMode(gin.DebugMode)
 
@@ -52,6 +53,9 @@ func SetupRouter(
 		meds.POST("/:id/schedules", scheduleHandler.CreateSchedule)
 		meds.PUT("/:id/schedules/:schedule_id", scheduleHandler.UpdateSchedule)
 		meds.DELETE("/:id/schedules/:schedule_id", scheduleHandler.DeleteSchedule)
+
+		// Log Routes
+		meds.POST("/:id/logs", logHandler.CreateLog)
 	}
 
 	return router
