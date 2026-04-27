@@ -46,17 +46,20 @@ func main() {
 	// initialize repositories
 	medRepo := repository.NewMedicationRepository(db)
 	scheduleRepo := repository.NewScheduleRepository(db)
+	logRepo := repository.NewLogRepository(db)
 
 	// Initialize services
 	medService := service.NewMedicationService(medRepo)
 	scheduleService := service.NewScheduleService(scheduleRepo, medRepo)
+	logService := service.NewLogService(logRepo, medRepo)
 
 	// Initialize handlers
 	medHandler := handler.NewMedicationHandler(medService)
 	scheduleHandler := handler.NewScheduleHandler(scheduleService)
+	logHandler := handler.NewLogHandler(logService)
 
 	// Initialize router
-	router := routes.SetupRouter(medHandler, scheduleHandler)
+	router := routes.SetupRouter(medHandler, scheduleHandler, logHandler)
 
 	// Initialize swagger
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
@@ -69,3 +72,7 @@ func main() {
 		log.Fatalf("Error starting server: %v", err)
 	}
 }
+
+// Add a new feature. The feature is that to transform to AI prompt for user initial data
+//   enterred.Its like  Enter your initial thoughts and let our Prompt Generator surprise you. The
+//   option be Simple, Advanced, & Expert. First add APIs.

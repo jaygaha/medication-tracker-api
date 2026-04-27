@@ -61,7 +61,7 @@ func (h *MedicationHandler) CreateMedication(c *gin.Context) {
 
 	if err := h.medService.CreateMedication(c.Request.Context(), med); err != nil {
 		if _, ok := err.(*errors.ValidationError); ok {
-			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			c.JSON(http.StatusUnprocessableEntity, gin.H{"error": err.Error()})
 			return
 		}
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
