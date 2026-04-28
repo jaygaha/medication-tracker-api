@@ -47,19 +47,22 @@ func main() {
 	medRepo := repository.NewMedicationRepository(db)
 	scheduleRepo := repository.NewScheduleRepository(db)
 	logRepo := repository.NewLogRepository(db)
+	interactionRepo := repository.NewDrugInteractionRepository(db)
 
 	// Initialize services
 	medService := service.NewMedicationService(medRepo)
 	scheduleService := service.NewScheduleService(scheduleRepo, medRepo)
 	logService := service.NewLogService(logRepo, medRepo)
+	interactionService := service.NewDrugInteractionService(interactionRepo, medRepo)
 
 	// Initialize handlers
 	medHandler := handler.NewMedicationHandler(medService)
 	scheduleHandler := handler.NewScheduleHandler(scheduleService)
 	logHandler := handler.NewLogHandler(logService)
+	interactionHandler := handler.NewDrugInteractionHandler(interactionService)
 
 	// Initialize router
-	router := routes.SetupRouter(medHandler, scheduleHandler, logHandler)
+	router := routes.SetupRouter(medHandler, scheduleHandler, logHandler, interactionHandler)
 
 	// Initialize swagger
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
