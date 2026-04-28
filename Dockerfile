@@ -1,5 +1,7 @@
 FROM golang:1.26-alpine
 
+ENV PATH="/go/bin:${PATH}"
+
 WORKDIR /app
 
 # Install air and swag for development

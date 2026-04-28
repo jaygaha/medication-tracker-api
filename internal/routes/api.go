@@ -29,6 +29,7 @@ func SetupRouter(
 	medicationHandler *handler.MedicationHandler,
 	scheduleHandler *handler.ScheduleHandler,
 	logHandler *handler.LogHandler,
+	drugInteractionHandler *handler.DrugInteractionHandler,
 ) *gin.Engine {
 	gin.SetMode(gin.DebugMode)
 
@@ -58,6 +59,14 @@ func SetupRouter(
 		meds.POST("/:id/logs", logHandler.CreateLog)
 	}
 
-	return router
+	// Drug Interaction Routes
+	drugInteractions := api.Group("/drug-interactions")
+	{
+		drugInteractions.POST("", drugInteractionHandler.CreateDrugInteraction)
+		drugInteractions.GET("", drugInteractionHandler.GetDrugInteractions)
+		drugInteractions.PATCH("/:id/acknowledge", drugInteractionHandler.AcknowledgeDrugInteraction)
+		drugInteractions.DELETE("/:id", drugInteractionHandler.DeleteDrugInteraction)
+	}
 
+	return router
 }
