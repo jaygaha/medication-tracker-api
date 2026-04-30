@@ -77,3 +77,20 @@ func (s *LogService) CreateLog(ctx context.Context, medicationID string, req *mo
 func (s *LogService) CheckExists(ctx context.Context, medicationID, scheduleTimeID string, date time.Time) (bool, error) {
 	return s.repo.CheckExists(ctx, medicationID, scheduleTimeID, date)
 }
+
+func (s *LogService) GetAdherenceStats(ctx context.Context, medicationID, userID string, from, to time.Time) (*models.AdherenceStats, error) {
+	// Validate the medication exists and belongs to the user
+	if _, err := s.medicationRepo.GetMedicationByID(ctx, medicationID); err != nil {
+		return nil, err
+	}
+
+	// Default to the last 30 days if not provided
+	if from.IsZero() {
+		from = time.Now().AddDate(0, 0, -30).Truncate(24 * time.Hour)
+	}
+	if to.IsZero() {
+		to = time.Now().Truncate(24 * time.Hour)
+	}
+
+	return s.repo.GetAdherenceStats(ctx, medicationID, userID, from, to)
+}

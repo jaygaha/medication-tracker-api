@@ -51,6 +51,7 @@ The API is stateless, timezone-aware, and designed to back a native mobile or we
 | 🗓 **Schedules API** | Full CRUD for `schedules`, including nested `schedule_days` and `schedule_times` |
 | 📋 **Adherence Logs** | Record and retrieve taken/skipped dose history (`medication_logs`) |
 | ⚠️ **Drug Interactions** | Store, query, and acknowledge interaction warnings (`drug_interactions`) |
+| 📊 **Adherence Stats** | Per-medication stats: taken/skipped counts, adherence rate %, current & longest streak |
 | 🔍 **Paginated Listing** | Sortable, paginated medication lists |
 | 🩺 **Swagger Docs** | Interactive API documentation at `/swagger/index.html` |
 | 🐳 **Docker Ready** | Full Docker Compose setup with hot reload via Air |
@@ -67,9 +68,8 @@ The following features are **not yet implemented** and will be added incremental
 | 3 | 👤 **User Auth** | Registration, login, JWT issuance, and token refresh |
 | 4 | 🌏 **Timezone Management** | User-facing endpoint to update timezone preference |
 | 5 | ⚡ **Redis Caching** | Cache frequently read data (medication lists, schedules) using the provisioned Redis service |
-| 6 | 📊 **Adherence Stats** | Aggregated adherence rates and streaks for charts/calendars |
 
-> **Next up:** Items **1–2** (notification alerts). See the [open issues](https://github.com/jaygaha/medication-tracker-api/issues) for progress.
+> **Next up:** Items **1–2** (notification alerts) or **3** (User Auth). See the [open issues](https://github.com/jaygaha/medication-tracker-api/issues) for progress.
 
 ---
 
