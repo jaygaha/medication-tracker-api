@@ -57,6 +57,7 @@ func SetupRouter(
 
 		// Log Routes
 		meds.POST("/:id/logs", logHandler.CreateLog)
+		meds.GET("/:id/stats", logHandler.GetAdherenceStats)
 	}
 
 	// Drug Interaction Routes
