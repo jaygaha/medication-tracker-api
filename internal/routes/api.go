@@ -30,6 +30,7 @@ func SetupRouter(
 	scheduleHandler *handler.ScheduleHandler,
 	logHandler *handler.LogHandler,
 	drugInteractionHandler *handler.DrugInteractionHandler,
+	deviceTokenHandler *handler.DeviceTokenHandler,
 ) *gin.Engine {
 	gin.SetMode(gin.DebugMode)
 
@@ -67,6 +68,13 @@ func SetupRouter(
 		drugInteractions.GET("", drugInteractionHandler.GetDrugInteractions)
 		drugInteractions.PATCH("/:id/acknowledge", drugInteractionHandler.AcknowledgeDrugInteraction)
 		drugInteractions.DELETE("/:id", drugInteractionHandler.DeleteDrugInteraction)
+	}
+
+	// Device Token Routes
+	deviceTokens := api.Group("/device-tokens")
+	{
+		deviceTokens.POST("", deviceTokenHandler.RegisterToken)
+		deviceTokens.DELETE("/:id", deviceTokenHandler.DeleteToken)
 	}
 
 	return router

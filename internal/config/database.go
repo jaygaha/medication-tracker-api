@@ -55,20 +55,26 @@ func InitDB(cfg *Config) (*sql.DB, error) {
 // runMigrations runs database migrations
 func runMigrations(db *sql.DB) error {
 	log.Println("Running migrations")
-	// Read the SQL schema file.
-	schemaBytes, err := os.ReadFile("migrations/0001_01_01_000000_create_default_tables.sql")
-	if err != nil {
-		return fmt.Errorf("failed to read schema file: %w", err)
+
+	migrationFiles := []string{
+		"migrations/0001_01_01_000000_create_default_tables.sql",
+		"migrations/0003_device_tokens.sql",
 	}
 
-	schemaQuery := string(schemaBytes)
+	for _, file := range migrationFiles {
+		schemaBytes, err := os.ReadFile(file)
+		if err != nil {
+			return fmt.Errorf("failed to read migration file %s: %w", file, err)
+		}
 
-	// Execute the schema query
-	_, err = db.Exec(schemaQuery)
-	if err != nil {
-		return fmt.Errorf("failed to execute schema query: %w", err)
+		_, err = db.Exec(string(schemaBytes))
+		if err != nil {
+			return fmt.Errorf("failed to execute migration %s: %w", file, err)
+		}
+		log.Printf("Migration applied: %s", file)
 	}
-	log.Println("Migrations applied successfully")
+
+	log.Println("All migrations applied successfully")
 	return nil
 }
 
