@@ -1,116 +1,85 @@
 # 💊 Medication Tracker API
 
-> A backend API server for a medication tracking system, inspired by Apple Health's medication feature. Built with Go, Gin, and PostgreSQL — designed to help users manage their prescriptions, schedules, and adherence logs in a structured, privacy-first way.
+> Your personal health assistant's intelligent backend. Inspired by Apple Health's medication feature, this API is built with Go, Gin, and PostgreSQL to help users manage their prescriptions, schedules, and adherence logs securely and effortlessly.
 
 ---
 
-## Table of Contents
+## 🌟 Welcome!
 
-- [Overview](#overview)
-- [Features](#features)
-- [Architecture](#architecture)
-- [Database Schema](#database-schema)
-- [Tech Stack](#tech-stack)
-- [Getting Started](#getting-started)
-  - [Prerequisites](#prerequisites)
-  - [Environment Variables](#environment-variables)
-  - [Running with Docker](#running-with-docker)
-  - [Running Locally](#running-locally)
-- [API Reference](#api-reference)
-  - [Health Check](#health-check)
-  - [Medications](#medications)
-- [Project Structure](#project-structure)
-- [Development](#development)
-- [Contributing](#contributing)
-- [License](#license)
+Managing medications shouldn't be a headache. The Medication Tracker API provides a robust, stateless, and timezone-aware foundation for building beautiful mobile or web applications that keep users on track with their health. 
+
+With this API, your application can empower users to:
+- **Easily add medications** with all the necessary clinical details (name, form, strength, prescription number).
+- **Visually identify pills** by saving shapes and colors, making the medicine cabinet less confusing.
+- **Set up flexible schedules** that fit their life—whether it's daily, every few days, specific days of the week, or just "as needed".
+- **Track their adherence** by logging every dose as *taken* or *skipped* to build healthy streaks.
+- **Stay safe** with automated drug interaction warnings and severity flags.
+- **Never miss a dose** with intelligent push notifications delivered right when they need them.
 
 ---
 
-## Overview
+## ✨ Features
 
-Medication Tracker is a RESTful backend API that replicates the core logic behind Apple Health's medication tracking module. The system allows a user to:
+### ✅ What's Built (Ready to Use)
 
-- **Add medications** with clinical details (name, form, strength, prescription number)
-- **Visualize medications** with shapes and colors to aid recognition
-- **Create flexible schedules** — daily, interval-based, day-of-week, or as-needed
-- **Log adherence** by marking each scheduled dose as *taken* or *skipped*
-- **Track drug interactions** with severity warnings and acknowledgement support
-
-The API is stateless, timezone-aware, and designed to back a native mobile or web client.
-
----
-
-## Features
-
-### ✅ Implemented
-
-| Feature | Description |
+| Feature | What it does |
 |---|---|
-| 💊 **Medication Management** | Full CRUD for medications with clinical metadata |
-| 🎨 **Medication Visuals** | CRUD endpoints for `medication_visuals` (shape, colors) via nested models |
-| 🗓 **Schedules API** | Full CRUD for `schedules`, including nested `schedule_days` and `schedule_times` |
-| 📋 **Adherence Logs** | Record and retrieve taken/skipped dose history (`medication_logs`) |
-| ⚠️ **Drug Interactions** | Store, query, and acknowledge interaction warnings (`drug_interactions`) |
-| 📊 **Adherence Stats** | Per-medication stats: taken/skipped counts, adherence rate %, current & longest streak |
-| 🔍 **Paginated Listing** | Sortable, paginated medication lists |
-| 🩺 **Swagger Docs** | Interactive API documentation at `/swagger/index.html` |
-| 🐳 **Docker Ready** | Full Docker Compose setup with hot reload via Air |
-| 🔒 **Soft Deletes** | Medications use `deleted_at` — history is preserved |
+| 💊 **Medication Management** | Full CRUD for medications with detailed clinical metadata. |
+| 🎨 **Medication Visuals** | Help users recognize their meds by storing shape and color data. |
+| 🗓 **Smart Schedules** | Flexible scheduling system (`daily`, `intervals`, `specific_days`, `as_needed`). |
+| 📋 **Adherence Logs** | Keep a historical record of taken and skipped doses. |
+| 📊 **Adherence Stats** | Track progress with taken/skipped counts, adherence rates, and streaks! |
+| ⚠️ **Drug Interactions** | Store, query, and acknowledge interaction warnings. |
+| 🔔 **Push Notifications** | Dose reminder alerts via **APNs** (iOS) and **FCM** (Android/Web). |
+| 🧠 **Intelligent Scheduler** | Background worker that accurately calculates trigger times based on user schedules. |
+| 🔍 **Paginated Listing** | Fast, sortable, and paginated medication lists. |
+| 🩺 **Swagger Docs** | Interactive, beautifully generated API documentation. |
+| 🐳 **Docker Ready** | Quick setup with Docker Compose and hot-reloading via Air. |
+| 🔒 **Soft Deletes** | History is preserved even when records are deleted. |
 
-### 🚧 Planned (TODO)
+### 🚧 What's Next (Planned)
 
-The following features are **not yet implemented** and will be added incrementally. Contributions are welcome — see [CONTRIBUTING.md](CONTRIBUTING.md).
+We're always looking to improve. Here is what is on the roadmap:
 
 | # | Feature | Description |
 |---|---|---|
-| 1 | 🔔 **Push Notifications** | Dose reminder alerts via **APNs** (iOS) and **FCM** (Android/Web) |
-| 2 | 🧠 **Smart Notification Scheduling** | Generate notification trigger times from schedules, respecting user timezone |
-| 3 | 👤 **User Auth** | Registration, login, JWT issuance, and token refresh |
-| 4 | 🌏 **Timezone Management** | User-facing endpoint to update timezone preference |
-| 5 | ⚡ **Redis Caching** | Cache frequently read data (medication lists, schedules) using the provisioned Redis service |
-
-> **Next up:** Items **1–2** (notification alerts) or **3** (User Auth). See the [open issues](https://github.com/jaygaha/medication-tracker-api/issues) for progress.
+| 1 | 👤 **User Authentication** | Full registration, login, JWT issuance, and token refresh flows. |
+| 2 | 🌏 **Timezone Management** | Give users the ability to update their timezone preferences seamlessly. |
+| 3 | ⚡ **Redis Caching** | Supercharge read performance for medication lists and schedules. |
+| 4 | 🔔 **Notification Upgrades** | Timezone awareness, deduplication logs, user preferences, and real SDK integration for Push Notifications. |
+| 5 | 🤖 **AI Prompt Generator** | Transform initial user thoughts into structured AI prompts (Simple, Advanced, Expert). |
 
 ---
 
-## Architecture
+## 🏗 How It's Built (Architecture)
 
-The project follows a clean **layered architecture** pattern, separating concerns across distinct packages:
+We believe in clean, maintainable code. The project follows a strict **layered architecture**, separating concerns to make scaling and testing a breeze:
 
-```
+```text
 Request → Router → Middleware → Handler → Service → Repository → PostgreSQL
 ```
 
-| Layer | Package | Responsibility |
+| Layer | Where it lives | What it does |
 |---|---|---|
-| **Entry Point** | `cmd/server` | App bootstrap, DI wiring, server start |
-| **Config** | `internal/config` | Environment loading, DB init, migrations, seeding |
-| **Routes** | `internal/routes` | Route definitions and middleware attachment |
-| **Middleware** | `internal/middleware` | Request enrichment (e.g., user context injection) |
-| **Handler** | `internal/handler` | HTTP request parsing, response formatting |
-| **Service** | `internal/service` | Business logic and validation |
-| **Repository** | `internal/repository` | Database queries (raw SQL via `database/sql`) |
-| **Models** | `internal/models` | Domain structs, request/response types |
-| **Errors** | `internal/errors` | Typed application errors (NotFound, Validation) |
+| **Entry Point** | `cmd/server` | Bootstraps the app, wires up dependencies, and starts the engine. |
+| **Config** | `internal/config` | Loads your environment, initializes the DB, and runs migrations. |
+| **Routes** | `internal/routes` | Maps URLs to the right handlers. |
+| **Middleware** | `internal/middleware` | Enriches requests (like injecting the user context). |
+| **Handler** | `internal/handler` | Parses incoming HTTP requests and formats outgoing responses. |
+| **Service** | `internal/service` | The brain of the operation! All business logic lives here. |
+| **Repository**| `internal/repository`| Talks to the database using raw, optimized SQL queries. |
+| **Models** | `internal/models` | Defines the data structures and shapes. |
+| **Errors** | `internal/errors` | Keeps our error handling typed and consistent. |
 
-### Dependency Injection
-
-Dependencies flow top-down through explicit constructor injection — there is no global state or service locator. The wiring happens in `main.go`:
-
-```go
-medRepo    := repository.NewMedicationRepository(db)
-medService := service.NewMedicationService(medRepo)
-medHandler := handler.NewMedicationHandler(medService)
-router     := routes.SetupRouter(medHandler)
-```
+Dependencies flow cleanly from top to bottom through constructor injection—no messy global state!
 
 ---
 
-## Database Schema
+## 💾 The Database
 
-The schema is inspired by Apple Health's medication model and is designed for clinical accuracy and extensibility. All tables use UUID primary keys and `TIMESTAMP WITH TIME ZONE` columns.
+Our schema is designed for clinical accuracy and future growth. We use `UUID`s for all primary keys and `TIMESTAMP WITH TIME ZONE` to handle time globally.
 
-```
+```text
 ┌─────────────────────────────────────────────────────────────┐
 │                           users                             │
 │  id · first_name · last_name · email · timezone · ...       │
@@ -149,280 +118,91 @@ The schema is inspired by Apple Health's medication model and is designed for cl
            └──────────────┘    └──────────────────┘
 ```
 
-### Enums
+---
 
-| Type | Values |
-|---|---|
-| `medication_form` | `tablet`, `capsule`, `liquid`, `topical`, `injection`, `drops`, `inhaler`, `powder`, `device`, `other` |
-| `medication_status` | `active`, `archived`, `discontinued` |
-| `frequency_type` | `every_day`, `regular_intervals`, `specific_days`, `as_needed` |
-| `log_status` | `taken`, `skipped` |
-| `interaction_severity` | `minor`, `moderate`, `severe`, `critical` |
+## 🛠 Tech Stack
+
+We use a modern, blazing-fast stack:
+
+- **Language:** [Go 1.26+](https://golang.org/)
+- **Web Framework:** [Gin](https://github.com/gin-gonic/gin)
+- **Database:** [PostgreSQL 18](https://www.postgresql.org/) (via `database/sql` & `lib/pq`)
+- **Cache:** [Redis 8](https://redis.io/) (provisioned for future use)
+- **API Docs:** [Swaggo/Swag](https://github.com/swaggo/swag)
+- **Dev Tools:** [Air](https://github.com/air-verse/air) (Hot Reloading), Docker
 
 ---
 
-## Tech Stack
+## 🚀 Getting Started
 
-| Component | Technology |
-|---|---|
-| **Language** | [Go 1.26+](https://golang.org/) |
-| **Web Framework** | [Gin](https://github.com/gin-gonic/gin) v1.12 |
-| **Database** | [PostgreSQL 18](https://www.postgresql.org/) |
-| **DB Driver** | [lib/pq](https://github.com/lib/pq) (native `database/sql`) |
-| **Cache** | [Redis 8](https://redis.io/) (provisioned, future use) |
-| **API Docs** | [Swaggo/Swag](https://github.com/swaggo/swag) + Gin Swagger UI |
-| **Config** | [godotenv](https://github.com/joho/godotenv) |
-| **Hot Reload** | [Air](https://github.com/air-verse/air) |
-| **Containerisation** | Docker + Docker Compose |
-
----
-
-## Getting Started
+Ready to run this locally? Let's get you set up!
 
 ### Prerequisites
+- [Docker Desktop](https://www.docker.com/products/docker-desktop/) (Highly recommended for the smoothest experience)
+- Or: Go 1.26+ and a local PostgreSQL instance.
 
-- [Go 1.26+](https://go.dev/dl/)
-- [Docker Desktop](https://www.docker.com/products/docker-desktop/) (recommended)
-- Or: a local PostgreSQL 14+ instance
+### 1. Configure your environment
 
-### Environment Variables
-
-Copy `.env.example` to `.env` and fill in your values:
+Copy the example environment file and tweak it if needed:
 
 ```bash
 cp .env.example .env
 ```
 
-| Variable | Default | Description |
-|---|---|---|
-| `APP_NAME` | `Medication Tracker` | Application name |
-| `API_PORT` | `5010` | Port the API listens on |
-| `ENV` | `development` | Runtime environment |
-| `POSTGRES_USER` | `postgres` | PostgreSQL username |
-| `POSTGRES_PASSWORD` | *(required)* | PostgreSQL password |
-| `POSTGRES_DB` | `med_sys` | PostgreSQL database name |
-| `POSTGRES_PORT` | `5432` | PostgreSQL port inside container |
-| `POSTGRES_PUBLISHED_PORT` | `5402` | PostgreSQL port exposed on host |
-| `REDIS_PORT` | `6379` | Redis port inside container |
-| `REDIS_PUBLISHED_PORT` | `6302` | Redis port exposed on host |
-| `REDIS_PASSWORD` | *(empty)* | Redis auth password |
-| `CORS_ALLOWED_ORIGINS` | `http://localhost:5173,...` | Comma-separated allowed origins |
-| `APNs_KEY_ID` | *(optional)* | Apple Push Notification key ID |
-| `APNs_TEAM_ID` | *(optional)* | Apple Push Notification team ID |
-| `FCM_API_KEY` | *(optional)* | Firebase Cloud Messaging API key |
+### 2. Fire it up with Docker! 🐳
 
-### Running with Docker
-
-This is the recommended approach. It starts the API, PostgreSQL, and Redis with a single command, and enables live-reload via Air.
+This is the easiest way to run the API, Database, and Redis all at once. Plus, it includes live-reloading!
 
 ```bash
-# 1. Clone the repository
-git clone https://github.com/jaygaha/medication-tracker-api.git
-cd medication-tracker-api
-
-# 2. Set up environment
-cp .env.example .env
-# Edit .env with your values
-
-# 3. Start all services
+# Start all services
 docker compose up --build
 
-# API will be available at: http://localhost:5010
-# Swagger UI:               http://localhost:5010/swagger/index.html
+# That's it! 
+# Your API is running at:      http://localhost:5010
+# Interactive API Docs are at: http://localhost:5010/swagger/index.html
 ```
 
-To run in detached mode:
-
-```bash
-docker compose up --build -d
-```
-
-To stop and remove volumes:
-
-```bash
-docker compose down -v
-```
-
-### Running Locally
-
-If you prefer to run the API directly without Docker (you still need a running PostgreSQL instance):
-
-```bash
-# Install dependencies
-go mod download
-
-# Install swag CLI for doc generation
-go install github.com/swaggo/swag/cmd/swag@latest
-
-# Generate Swagger docs
-swag init -g cmd/server/main.go
-
-# Run the server
-go run ./cmd/server/main.go
-```
-
-With hot reload (requires [Air](https://github.com/air-verse/air)):
-
-```bash
-# Install Air
-go install github.com/air-verse/air@latest
-
-# Start with hot reload
-air -c .air.toml
-```
-
-**Database migrations** are run automatically on startup. The seed data (sample user, medications, schedules, and logs) is inserted only on a fresh, empty database.
+*(To run silently in the background, just add `-d`: `docker compose up --build -d`)*
 
 ---
 
-## API Reference
+## 📚 API Reference
 
-The base path for all API endpoints is `/api/v1`. Interactive documentation is available at:
+Explore and test the API directly from your browser using our beautifully generated Swagger UI:
+👉 **[http://localhost:5010/swagger/index.html](http://localhost:5010/swagger/index.html)**
 
-```
-http://localhost:5010/swagger/index.html
-```
-
-### Health Check
-
-| Method | Path | Description |
-|---|---|---|
-| `GET` | `/api/v1/health` | Returns `{ "status": "healthy" }` |
-
-### Medications
-
-| Method | Path | Description |
-|---|---|---|
-| `POST` | `/api/v1/medications` | Create a new medication |
-| `GET` | `/api/v1/medications` | List all medications (paginated) |
-| `GET` | `/api/v1/medications/:id` | Get a single medication by UUID |
-| `PUT` | `/api/v1/medications/:id` | Update a medication |
-| `DELETE` | `/api/v1/medications/:id` | Soft-delete a medication |
-
-#### List Query Parameters
-
-| Parameter | Type | Default | Description |
-|---|---|---|---|
-| `page` | `int` | `1` | Page number |
-| `limit` | `int` | `20` | Items per page |
-| `order-by` | `string` | `created_at` | Sort field (`name`, `form`, `status`, `created_at`, etc.) |
-| `order-dir` | `string` | `desc` | Sort direction: `asc` or `desc` |
-
-#### Create / Update Request Body
-
-```json
-{
-  "name": "Ibuprofen",
-  "form": "tablet",
-  "strength_value": 200,
-  "strength_unit": "mg",
-  "rx_number": "RX-123456",
-  "notes": "Take with food to prevent upset stomach.",
-  "status": "active"
-}
-```
-
-#### Medication Object Response
-
-```json
-{
-  "id": "22222222-2222-2222-2222-222222222222",
-  "name": "Ibuprofen",
-  "form": "tablet",
-  "strength_value": 200,
-  "strength_unit": "mg",
-  "rx_number": "RX-123456",
-  "notes": "Take with food to prevent upset stomach.",
-  "status": "active",
-  "created_at": "2026-04-23T03:45:00Z",
-  "updated_at": "2026-04-23T03:45:00Z"
-}
-```
+### Quick Glance:
+- **`GET /api/v1/health`** - Check if the system is alive and kicking!
+- **`POST /api/v1/medications`** - Add a new medication.
+- **`GET /api/v1/medications`** - List medications (supports pagination and sorting).
+- **`POST /api/v1/device-tokens`** - Register a device to start receiving push notifications!
 
 ---
 
-## Project Structure
+## 👨‍💻 For Developers
 
-```
-medication-tracker-api/
-│
-├── cmd/
-│   └── server/
-│       └── main.go              # Entry point: DI wiring & server start
-│
-├── internal/
-│   ├── config/
-│   │   ├── config.go            # Environment variable loading
-│   │   └── database.go          # DB init, connection pool, migrations, seeding
-│   │
-│   ├── errors/
-│   │   └── *.go                 # Typed errors (NotFoundError, ValidationError)
-│   │
-│   ├── handler/
-│   │   └── medication_handler.go # HTTP handlers (controllers)
-│   │
-│   ├── middleware/
-│   │   └── attach-user.go       # Injects user_id into Gin context
-│   │
-│   ├── models/
-│   │   ├── medication.go        # Medication domain struct & request types
-│   │   └── user.go              # User domain struct
-│   │
-│   ├── repository/
-│   │   └── medication_repo.go   # Raw SQL queries against PostgreSQL
-│   │
-│   ├── routes/
-│   │   └── api.go               # Route group definitions
-│   │
-│   └── service/
-│       └── medication_service.go # Business logic layer
-│
-├── migrations/
-│   ├── 0001_..._create_default_tables.sql  # Full schema (enums, tables, indexes)
-│   └── 0002_default_seed.sql               # Sample data for development
-│
-├── docs/                        # Auto-generated Swagger documentation
-├── .air.toml                    # Air hot-reload configuration
-├── .env.example                 # Environment variable template
-├── compose.yml                  # Docker Compose (api + postgres + redis)
-├── Dockerfile                   # Multi-stage build with Air + Swag
-├── go.mod
-└── go.sum
-```
-
----
-
-## Development
-
-### Generating Swagger Docs
-
-API docs are generated from Go source annotations using `swag`. Run this after changing any handler signature or adding a new route:
-
+### Updating the API Docs
+Whenever you add a new endpoint or change a response, regenerate the swagger docs:
 ```bash
 swag init -g cmd/server/main.go
 ```
 
-### Running Migrations
+### Database Migrations
+Migrations are smart and run automatically when the server starts! Need to tweak the schema? Just update `migrations/0001_..._create_default_tables.sql` or add a new migration file to the folder.
 
-Migrations are applied automatically at startup. To manually inspect or extend the schema, edit `migrations/0001_..._create_default_tables.sql`.
-
-> **Note:** The current migration runner reads and executes the SQL file on every startup using idempotent `CREATE TABLE IF NOT EXISTS` and `CREATE TYPE IF NOT EXISTS` guards — no versioning table is used yet.
-
-### Code Style
-
-- Follow standard Go conventions (`gofmt`, `golint`)
-- Keep handlers thin — put logic in the service layer
-- Use typed errors from `internal/errors` for consistent error handling
-- All routes go through the `internal/routes` package — no ad-hoc route registration in `main.go`
+### Code Style Guidelines
+- **Keep it Go-idiomatic:** Use `gofmt` and keep things simple.
+- **Thin Handlers, Fat Services:** HTTP Handlers should just parse requests and format responses. All the actual "thinking" belongs in the Service layer.
+- **Error Handling:** Always use our custom typed errors from the `internal/errors` package so the frontend gets consistent, helpful error messages.
 
 ---
 
-## Contributing
+## 🤝 Let's Build Together
 
-Contributions are welcome! Please read [CONTRIBUTING.md](CONTRIBUTING.md) before opening a pull request.
+Found a bug? Have a great idea for a feature? We'd love your help! Check out [CONTRIBUTING.md](CONTRIBUTING.md) to see how you can get involved.
 
 ---
 
-## License
+## 📄 License
 
-This project is licensed under the MIT License. See [LICENSE](LICENSE) for details.
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for all the legal details.

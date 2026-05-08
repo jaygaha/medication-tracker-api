@@ -15,6 +15,7 @@ type ScheduleRepository interface {
 	CreateSchedule(ctx context.Context, schedule *models.Schedule) error
 	GetActiveByMedicationID(ctx context.Context, medicationID string) (*models.Schedule, error)
 	GetSchedulesByMedicationID(ctx context.Context, medicationID string) (*models.Schedule, error)
+	GetAllActiveSchedules(ctx context.Context) ([]*models.Schedule, error)
 	UpdateSchedule(ctx context.Context, schedule *models.Schedule) error
 	DeleteSchedule(ctx context.Context, medicationID, scheduleID string) error
 }
@@ -199,6 +200,92 @@ func (r *scheduleRepository) GetSchedulesByMedicationID(ctx context.Context, med
 	}
 
 	return schedule, nil
+}
+
+// GetAllActiveSchedules retrieves all active schedules with their related data
+func (r *scheduleRepository) GetAllActiveSchedules(ctx context.Context) ([]*models.Schedule, error) {
+	// 1. Get all active base schedules
+	query := `
+		SELECT id, medication_id, type, interval_days, start_date, end_date, created_at, updated_at
+		FROM schedules
+		WHERE deleted_at IS NULL AND (end_date IS NULL OR end_date >= CURRENT_DATE)
+	`
+	rows, err := r.db.QueryContext(ctx, query)
+	if err != nil {
+		return nil, errors.NewDatabaseError("failed to get active schedules", err)
+	}
+	defer rows.Close()
+
+	var schedules []*models.Schedule
+	scheduleMap := make(map[string]*models.Schedule)
+
+	for rows.Next() {
+		s := &models.Schedule{}
+		if err := rows.Scan(
+			&s.ID, &s.MedicationID, &s.Type, &s.IntervalDays, &s.StartDate, &s.EndDate, &s.CreatedAt, &s.UpdatedAt,
+		); err != nil {
+			return nil, errors.NewDatabaseError("failed to scan schedule", err)
+		}
+		s.Times = make([]models.ScheduleTime, 0)
+		s.Days = make([]int, 0)
+		schedules = append(schedules, s)
+		scheduleMap[s.ID] = s
+	}
+	if err = rows.Err(); err != nil {
+		return nil, errors.NewDatabaseError("error iterating schedules", err)
+	}
+
+	if len(schedules) == 0 {
+		return schedules, nil
+	}
+
+	// 2. Get all times for these schedules
+	timeQuery := `
+		SELECT id, schedule_id, time_of_day, dose_amount, created_at
+		FROM schedule_times
+		WHERE schedule_id IN (SELECT id FROM schedules WHERE deleted_at IS NULL AND (end_date IS NULL OR end_date >= CURRENT_DATE))
+		ORDER BY time_of_day
+	`
+	timeRows, err := r.db.QueryContext(ctx, timeQuery)
+	if err != nil {
+		return nil, errors.NewDatabaseError("failed to get schedule times", err)
+	}
+	defer timeRows.Close()
+
+	for timeRows.Next() {
+		var t models.ScheduleTime
+		if err := timeRows.Scan(&t.ID, &t.ScheduleID, &t.TimeOfDay, &t.DoseAmount, &t.CreatedAt); err != nil {
+			return nil, errors.NewDatabaseError("failed to scan schedule time", err)
+		}
+		if s, ok := scheduleMap[t.ScheduleID]; ok {
+			s.Times = append(s.Times, t)
+		}
+	}
+
+	// 3. Get all days for these schedules
+	dayQuery := `
+		SELECT schedule_id, day_of_week
+		FROM schedule_days
+		WHERE schedule_id IN (SELECT id FROM schedules WHERE deleted_at IS NULL AND (end_date IS NULL OR end_date >= CURRENT_DATE))
+	`
+	dayRows, err := r.db.QueryContext(ctx, dayQuery)
+	if err != nil {
+		return nil, errors.NewDatabaseError("failed to get schedule days", err)
+	}
+	defer dayRows.Close()
+
+	for dayRows.Next() {
+		var scheduleID string
+		var day int
+		if err := dayRows.Scan(&scheduleID, &day); err != nil {
+			return nil, errors.NewDatabaseError("failed to scan schedule day", err)
+		}
+		if s, ok := scheduleMap[scheduleID]; ok {
+			s.Days = append(s.Days, day)
+		}
+	}
+
+	return schedules, nil
 }
 
 // UpdateSchedule updates a schedule

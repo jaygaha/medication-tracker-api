@@ -2,12 +2,15 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"log"
+	"time"
 
 	_ "github.com/jaygaha/medication-tracker-api/docs"
 	"github.com/jaygaha/medication-tracker-api/internal/config"
 	"github.com/jaygaha/medication-tracker-api/internal/handler"
+	"github.com/jaygaha/medication-tracker-api/internal/notification"
 	"github.com/jaygaha/medication-tracker-api/internal/repository"
 	"github.com/jaygaha/medication-tracker-api/internal/routes"
 	"github.com/jaygaha/medication-tracker-api/internal/service"
@@ -48,21 +51,32 @@ func main() {
 	scheduleRepo := repository.NewScheduleRepository(db)
 	logRepo := repository.NewLogRepository(db)
 	interactionRepo := repository.NewDrugInteractionRepository(db)
+	deviceTokenRepo := repository.NewDeviceTokenRepository(db)
 
 	// Initialize services
 	medService := service.NewMedicationService(medRepo)
 	scheduleService := service.NewScheduleService(scheduleRepo, medRepo)
 	logService := service.NewLogService(logRepo, medRepo)
 	interactionService := service.NewDrugInteractionService(interactionRepo, medRepo)
+	deviceTokenService := service.NewDeviceTokenService(deviceTokenRepo)
+
+	// Initialize notifications and start scheduler
+	apnsProvider := notification.NewAPNsProvider(cfg)
+	fcmProvider := notification.NewFCMProvider(cfg)
+	notificationService := service.NewNotificationService(apnsProvider, fcmProvider, deviceTokenRepo)
+
+	schedulerWorker := service.NewSchedulerService(scheduleRepo, medRepo, notificationService)
+	schedulerWorker.Start(context.Background(), 5*time.Minute)
 
 	// Initialize handlers
 	medHandler := handler.NewMedicationHandler(medService)
 	scheduleHandler := handler.NewScheduleHandler(scheduleService)
 	logHandler := handler.NewLogHandler(logService)
 	interactionHandler := handler.NewDrugInteractionHandler(interactionService)
+	deviceTokenHandler := handler.NewDeviceTokenHandler(deviceTokenService)
 
 	// Initialize router
-	router := routes.SetupRouter(medHandler, scheduleHandler, logHandler, interactionHandler)
+	router := routes.SetupRouter(medHandler, scheduleHandler, logHandler, interactionHandler, deviceTokenHandler)
 
 	// Initialize swagger
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
