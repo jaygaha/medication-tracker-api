@@ -30,8 +30,8 @@ With this API, your application can empower users to:
 | 📋 **Adherence Logs** | Keep a historical record of taken and skipped doses. |
 | 📊 **Adherence Stats** | Track progress with taken/skipped counts, adherence rates, and streaks! |
 | ⚠️ **Drug Interactions** | Store, query, and acknowledge interaction warnings. |
-| 🔔 **Push Notifications** | Dose reminder alerts via **APNs** (iOS) and **FCM** (Android/Web). |
-| 🧠 **Intelligent Scheduler** | Background worker that accurately calculates trigger times based on user schedules. |
+| 🔔 **Push Notifications** | Dose reminder alerts via **APNs** and **FCM** with strict deduplication and user timezone support. |
+| 🧠 **Intelligent Scheduler** | Background worker that accurately calculates localized trigger times based on user schedules. |
 | 🔍 **Paginated Listing** | Fast, sortable, and paginated medication lists. |
 | 🩺 **Swagger Docs** | Interactive, beautifully generated API documentation. |
 | 🐳 **Docker Ready** | Quick setup with Docker Compose and hot-reloading via Air. |
@@ -46,7 +46,7 @@ We're always looking to improve. Here is what is on the roadmap:
 | 1 | 👤 **User Authentication** | Full registration, login, JWT issuance, and token refresh flows. |
 | 2 | 🌏 **Timezone Management** | Give users the ability to update their timezone preferences seamlessly. |
 | 3 | ⚡ **Redis Caching** | Supercharge read performance for medication lists and schedules. |
-| 4 | 🔔 **Notification Upgrades** | Timezone awareness, deduplication logs, user preferences, and real SDK integration for Push Notifications. |
+| 4 | 🔔 **Notification Upgrades** | User preferences and real SDK integration for Push Notifications. |
 | 5 | 🤖 **AI Prompt Generator** | Transform initial user thoughts into structured AI prompts (Simple, Advanced, Expert). |
 
 ---

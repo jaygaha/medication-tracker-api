@@ -11,16 +11,18 @@ import (
 )
 
 type SchedulerService struct {
-	scheduleRepo repository.ScheduleRepository
-	medRepo      repository.MedicationRepository
-	notifService *NotificationService
+	scheduleRepo        repository.ScheduleRepository
+	medRepo             repository.MedicationRepository
+	notifService        *NotificationService
+	notificationLogRepo repository.NotificationLogRepository
 }
 
-func NewSchedulerService(scheduleRepo repository.ScheduleRepository, medRepo repository.MedicationRepository, notifService *NotificationService) *SchedulerService {
+func NewSchedulerService(scheduleRepo repository.ScheduleRepository, medRepo repository.MedicationRepository, notifService *NotificationService, notificationLogRepo repository.NotificationLogRepository) *SchedulerService {
 	return &SchedulerService{
-		scheduleRepo: scheduleRepo,
-		medRepo:      medRepo,
-		notifService: notifService,
+		scheduleRepo:        scheduleRepo,
+		medRepo:             medRepo,
+		notifService:        notifService,
+		notificationLogRepo: notificationLogRepo,
 	}
 }
 
@@ -51,12 +53,19 @@ func (s *SchedulerService) processSchedules(ctx context.Context) {
 	}
 
 	now := time.Now()
-	// Current day 0=Sunday
-	currentDay := int(now.Weekday())
 
 	for _, sched := range schedules {
+		// Timezone Awareness
+		loc, err := time.LoadLocation(sched.UserTimeZone)
+		if err != nil || sched.UserTimeZone == "" {
+			loc = time.UTC
+		}
+		
+		userNow := now.In(loc)
+		currentDay := int(userNow.Weekday()) // 0=Sunday
+
 		// 1. Check if today is a valid day for this schedule
-		if !s.isDayValid(sched, now, currentDay) {
+		if !s.isDayValid(sched, userNow, currentDay) {
 			continue
 		}
 
@@ -67,27 +76,49 @@ func (s *SchedulerService) processSchedules(ctx context.Context) {
 				continue
 			}
 
-			scheduledTimeToday := time.Date(now.Year(), now.Month(), now.Day(), parsedTime.Hour(), parsedTime.Minute(), 0, 0, now.Location())
+			scheduledTimeToday := time.Date(userNow.Year(), userNow.Month(), userNow.Day(), parsedTime.Hour(), parsedTime.Minute(), 0, 0, loc)
 
+			// Calculate diff using actual times
 			timeDiff := now.Sub(scheduledTimeToday)
-			// Assuming interval is 5 mins, we trigger if timeDiff is between 0 and 5 minutes
+			
 			if timeDiff >= 0 && timeDiff < 5*time.Minute {
-				s.triggerNotification(ctx, sched, st.TimeOfDay)
+				// Deduplication check
+				scheduledDate := time.Date(userNow.Year(), userNow.Month(), userNow.Day(), 0, 0, 0, 0, time.UTC)
+				hasSent, err := s.notificationLogRepo.HasSentNotification(ctx, st.ID, scheduledDate)
+				
+				if err == nil && !hasSent {
+					s.triggerNotification(ctx, sched, st, scheduledDate, now)
+				} else if err != nil {
+					log.Printf("[Scheduler] Error checking deduplication log: %v", err)
+				}
 			}
 		}
 	}
 }
 
-func (s *SchedulerService) triggerNotification(ctx context.Context, sched *models.Schedule, timeOfDay string) {
+func (s *SchedulerService) triggerNotification(ctx context.Context, sched *models.Schedule, st models.ScheduleTime, scheduledDate time.Time, now time.Time) {
 	med, err := s.medRepo.GetMedicationByID(ctx, sched.MedicationID)
 	if err != nil {
 		log.Printf("[Scheduler] Error getting medication %s: %v", sched.MedicationID, err)
 		return
 	}
 
-	err = s.notifService.SendDoseReminder(ctx, med.UserID, med.Name, timeOfDay)
+	err = s.notifService.SendDoseReminder(ctx, med.UserID, med.Name, st.TimeOfDay)
 	if err != nil {
 		log.Printf("[Scheduler] Error sending reminder for %s: %v", med.Name, err)
+		return
+	}
+
+	// Log success to prevent double-sending
+	logRecord := &models.NotificationLog{
+		UserID:         med.UserID,
+		ScheduleID:     sched.ID,
+		ScheduleTimeID: st.ID,
+		ScheduledDate:  scheduledDate,
+		SentAt:         now,
+	}
+	if err := s.notificationLogRepo.RecordNotification(ctx, logRecord); err != nil {
+		log.Printf("[Scheduler] Error recording notification sent log: %v", err)
 	}
 }
 
