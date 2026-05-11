@@ -206,9 +206,11 @@ func (r *scheduleRepository) GetSchedulesByMedicationID(ctx context.Context, med
 func (r *scheduleRepository) GetAllActiveSchedules(ctx context.Context) ([]*models.Schedule, error) {
 	// 1. Get all active base schedules
 	query := `
-		SELECT id, medication_id, type, interval_days, start_date, end_date, created_at, updated_at
-		FROM schedules
-		WHERE deleted_at IS NULL AND (end_date IS NULL OR end_date >= CURRENT_DATE)
+		SELECT s.id, s.medication_id, s.type, s.interval_days, s.start_date, s.end_date, u.timezone AS user_time_zone, s.created_at, s.updated_at
+		FROM schedules AS s
+		JOIN medications AS m ON s.medication_id = m.id
+		JOIN users AS u ON m.user_id = u.id
+		WHERE s.deleted_at IS NULL AND (s.end_date IS NULL OR s.end_date >= CURRENT_DATE)
 	`
 	rows, err := r.db.QueryContext(ctx, query)
 	if err != nil {
@@ -222,7 +224,7 @@ func (r *scheduleRepository) GetAllActiveSchedules(ctx context.Context) ([]*mode
 	for rows.Next() {
 		s := &models.Schedule{}
 		if err := rows.Scan(
-			&s.ID, &s.MedicationID, &s.Type, &s.IntervalDays, &s.StartDate, &s.EndDate, &s.CreatedAt, &s.UpdatedAt,
+			&s.ID, &s.MedicationID, &s.Type, &s.IntervalDays, &s.StartDate, &s.EndDate, &s.UserTimeZone, &s.CreatedAt, &s.UpdatedAt,
 		); err != nil {
 			return nil, errors.NewDatabaseError("failed to scan schedule", err)
 		}

@@ -26,6 +26,7 @@ type Schedule struct {
 	IntervalDays *int          `json:"interval_days,omitempty" db:"interval_days"` // Used for 'regular_intervals'
 	StartDate    time.Time     `json:"start_date" db:"start_date"`
 	EndDate      *time.Time    `json:"end_date,omitempty" db:"end_date"` // NULL if ongoing indefinitely
+	UserTimeZone string        `json:"user_time_zone" db:"user_time_zone"`
 	CreatedAt    time.Time     `json:"created_at" db:"created_at"`
 	UpdatedAt    time.Time     `json:"updated_at" db:"updated_at"`
 	DeletedAt    *time.Time    `json:"-" db:"deleted_at"` // Soft delete

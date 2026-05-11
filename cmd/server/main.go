@@ -52,6 +52,7 @@ func main() {
 	logRepo := repository.NewLogRepository(db)
 	interactionRepo := repository.NewDrugInteractionRepository(db)
 	deviceTokenRepo := repository.NewDeviceTokenRepository(db)
+	notificationLogRepo := repository.NewNotificationLogRepository(db)
 
 	// Initialize services
 	medService := service.NewMedicationService(medRepo)
@@ -64,8 +65,8 @@ func main() {
 	apnsProvider := notification.NewAPNsProvider(cfg)
 	fcmProvider := notification.NewFCMProvider(cfg)
 	notificationService := service.NewNotificationService(apnsProvider, fcmProvider, deviceTokenRepo)
-
-	schedulerWorker := service.NewSchedulerService(scheduleRepo, medRepo, notificationService)
+	
+	schedulerWorker := service.NewSchedulerService(scheduleRepo, medRepo, notificationService, notificationLogRepo)
 	schedulerWorker.Start(context.Background(), 5*time.Minute)
 
 	// Initialize handlers

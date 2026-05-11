@@ -59,6 +59,7 @@ func runMigrations(db *sql.DB) error {
 	migrationFiles := []string{
 		"migrations/0001_01_01_000000_create_default_tables.sql",
 		"migrations/0003_device_tokens.sql",
+		"migrations/0004_notification_logs.sql",
 	}
 
 	for _, file := range migrationFiles {
