@@ -53,6 +53,7 @@ func main() {
 	interactionRepo := repository.NewDrugInteractionRepository(db)
 	deviceTokenRepo := repository.NewDeviceTokenRepository(db)
 	notificationLogRepo := repository.NewNotificationLogRepository(db)
+	userRepo := repository.NewUserRepository(db)
 
 	// Initialize services
 	medService := service.NewMedicationService(medRepo)
@@ -60,12 +61,13 @@ func main() {
 	logService := service.NewLogService(logRepo, medRepo)
 	interactionService := service.NewDrugInteractionService(interactionRepo, medRepo)
 	deviceTokenService := service.NewDeviceTokenService(deviceTokenRepo)
+	userService := service.NewUserService(userRepo)
 
 	// Initialize notifications and start scheduler
 	apnsProvider := notification.NewAPNsProvider(cfg)
 	fcmProvider := notification.NewFCMProvider(cfg)
 	notificationService := service.NewNotificationService(apnsProvider, fcmProvider, deviceTokenRepo)
-	
+
 	schedulerWorker := service.NewSchedulerService(scheduleRepo, medRepo, notificationService, notificationLogRepo)
 	schedulerWorker.Start(context.Background(), 5*time.Minute)
 
@@ -75,9 +77,10 @@ func main() {
 	logHandler := handler.NewLogHandler(logService)
 	interactionHandler := handler.NewDrugInteractionHandler(interactionService)
 	deviceTokenHandler := handler.NewDeviceTokenHandler(deviceTokenService)
+	userHandler := handler.NewUserHandler(userService)
 
 	// Initialize router
-	router := routes.SetupRouter(medHandler, scheduleHandler, logHandler, interactionHandler, deviceTokenHandler)
+	router := routes.SetupRouter(medHandler, scheduleHandler, logHandler, interactionHandler, deviceTokenHandler, userHandler)
 
 	// Initialize swagger
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
