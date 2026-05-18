@@ -36,6 +36,7 @@ With this API, your application can empower users to:
 | 🩺 **Swagger Docs** | Interactive, beautifully generated API documentation. |
 | 🐳 **Docker Ready** | Quick setup with Docker Compose and hot-reloading via Air. |
 | 🔒 **Soft Deletes** | History is preserved even when records are deleted. |
+| 👤 **User Profiles** | View and update basic user information and timezone settings. |
 
 ### 🚧 What's Next (Planned)
 
@@ -44,10 +45,9 @@ We're always looking to improve. Here is what is on the roadmap:
 | # | Feature | Description |
 |---|---|---|
 | 1 | 👤 **User Authentication** | Full registration, login, JWT issuance, and token refresh flows. |
-| 2 | 🌏 **Timezone Management** | Give users the ability to update their timezone preferences seamlessly. |
-| 3 | ⚡ **Redis Caching** | Supercharge read performance for medication lists and schedules. |
-| 4 | 🔔 **Notification Upgrades** | User preferences and real SDK integration for Push Notifications. |
-| 5 | 🤖 **AI Prompt Generator** | Transform initial user thoughts into structured AI prompts (Simple, Advanced, Expert). |
+| 2 | ⚡ **Redis Caching** | Supercharge read performance for medication lists and schedules. |
+| 3 | 🔔 **Notification Upgrades** | User preferences and real SDK integration for Push Notifications. |
+| 4 | 🤖 **AI Prompt Generator** | Transform initial user thoughts into structured AI prompts (Simple, Advanced, Expert). |
 
 ---
 
@@ -176,6 +176,8 @@ Explore and test the API directly from your browser using our beautifully genera
 - **`POST /api/v1/medications`** - Add a new medication.
 - **`GET /api/v1/medications`** - List medications (supports pagination and sorting).
 - **`POST /api/v1/device-tokens`** - Register a device to start receiving push notifications!
+- **`GET /api/v1/users/profile`** - Retrieve the currently authenticated user's profile.
+- **`PATCH /api/v1/users/profile`** - Update basic information and timezone settings.
 
 ---
 

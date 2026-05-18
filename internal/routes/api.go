@@ -31,6 +31,7 @@ func SetupRouter(
 	logHandler *handler.LogHandler,
 	drugInteractionHandler *handler.DrugInteractionHandler,
 	deviceTokenHandler *handler.DeviceTokenHandler,
+	userHandler *handler.UserHandler,
 ) *gin.Engine {
 	gin.SetMode(gin.DebugMode)
 
@@ -75,6 +76,13 @@ func SetupRouter(
 	{
 		deviceTokens.POST("", deviceTokenHandler.RegisterToken)
 		deviceTokens.DELETE("/:id", deviceTokenHandler.DeleteToken)
+	}
+
+	// User Profile Routes
+	userProfile := api.Group("/users/profile")
+	{
+		userProfile.GET("/", userHandler.GetUserProfile)
+		userProfile.PATCH("/", userHandler.UpdateUserProfile)
 	}
 
 	return router
