@@ -62,6 +62,7 @@ func main() {
 	interactionService := service.NewDrugInteractionService(interactionRepo, medRepo)
 	deviceTokenService := service.NewDeviceTokenService(deviceTokenRepo)
 	userService := service.NewUserService(userRepo)
+	authService := service.NewAuthService(userRepo, cfg)
 
 	// Initialize notifications and start scheduler
 	apnsProvider := notification.NewAPNsProvider(cfg)
@@ -78,9 +79,10 @@ func main() {
 	interactionHandler := handler.NewDrugInteractionHandler(interactionService)
 	deviceTokenHandler := handler.NewDeviceTokenHandler(deviceTokenService)
 	userHandler := handler.NewUserHandler(userService)
+	authHandler := handler.NewAuthHandler(authService)
 
 	// Initialize router
-	router := routes.SetupRouter(medHandler, scheduleHandler, logHandler, interactionHandler, deviceTokenHandler, userHandler)
+	router := routes.SetupRouter(medHandler, scheduleHandler, logHandler, interactionHandler, deviceTokenHandler, userHandler, authHandler, cfg)
 
 	// Initialize swagger
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))

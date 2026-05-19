@@ -2,6 +2,7 @@ package config
 
 import (
 	"os"
+	"strconv"
 )
 
 type Config struct {
@@ -12,10 +13,12 @@ type Config struct {
 
 // Server Config
 type ServerConfig struct {
-	Name string
-	Host string
-	Port string
-	Env  string
+	Name               string
+	Host               string
+	Port               string
+	Env                string
+	JwtSecret          string
+	JwtExpirationHours int
 }
 
 // DB Config
@@ -42,13 +45,25 @@ func getEnv(key, fallback string) string {
 	return fallback
 }
 
+func getEnvAsInt(key string, fallback int) int {
+	if value, ok := os.LookupEnv(key); ok {
+		if intValue, err := strconv.Atoi(value); err == nil {
+			return intValue
+		}
+	}
+	return fallback
+}
+
 // LoadConfig Load the application configuration
 func LoadConfig() *Config {
 	return &Config{
 		Server: ServerConfig{
-			Name: getEnv("APP_NAME", "Medication System"),
-			Host: getEnv("API_HOST", "localhost"),
-			Port: getEnv("API_PORT", "5010"),
+			Name:               getEnv("APP_NAME", "Medication System"),
+			Host:               getEnv("API_HOST", "localhost"),
+			Port:               getEnv("API_PORT", "5010"),
+			Env:                getEnv("ENV", "development"),
+			JwtSecret:          getEnv("JWT_SECRET", "secret-key"),
+			JwtExpirationHours: getEnvAsInt("JWT_EXPIRATION_HOURS", 24),
 		},
 		DB: DBConfig{
 			Host:     getEnv("DB_HOST", "localhost"),

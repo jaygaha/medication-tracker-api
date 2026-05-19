@@ -37,6 +37,7 @@ With this API, your application can empower users to:
 | 🐳 **Docker Ready** | Quick setup with Docker Compose and hot-reloading via Air. |
 | 🔒 **Soft Deletes** | History is preserved even when records are deleted. |
 | 👤 **User Profiles** | View and update basic user information and timezone settings. |
+| 🔐 **Authentication** | Full secure registration, login, and JWT-based session management. |
 
 ### 🚧 What's Next (Planned)
 
@@ -44,10 +45,9 @@ We're always looking to improve. Here is what is on the roadmap:
 
 | # | Feature | Description |
 |---|---|---|
-| 1 | 👤 **User Authentication** | Full registration, login, JWT issuance, and token refresh flows. |
-| 2 | ⚡ **Redis Caching** | Supercharge read performance for medication lists and schedules. |
-| 3 | 🔔 **Notification Upgrades** | User preferences and real SDK integration for Push Notifications. |
-| 4 | 🤖 **AI Prompt Generator** | Transform initial user thoughts into structured AI prompts (Simple, Advanced, Expert). |
+| 1 | ⚡ **Redis Caching** | Supercharge read performance for medication lists and schedules. |
+| 2 | 🔔 **Notification Upgrades** | User preferences and real SDK integration for Push Notifications. |
+| 3 | 🤖 **AI Prompt Generator** | Transform initial user thoughts into structured AI prompts (Simple, Advanced, Expert). |
 
 ---
 
@@ -173,6 +173,8 @@ Explore and test the API directly from your browser using our beautifully genera
 
 ### Quick Glance:
 - **`GET /api/v1/health`** - Check if the system is alive and kicking!
+- **`POST /api/v1/auth/register`** - Create a new user account.
+- **`POST /api/v1/auth/login`** - Authenticate to receive your JWT access token.
 - **`POST /api/v1/medications`** - Add a new medication.
 - **`GET /api/v1/medications`** - List medications (supports pagination and sorting).
 - **`POST /api/v1/device-tokens`** - Register a device to start receiving push notifications!

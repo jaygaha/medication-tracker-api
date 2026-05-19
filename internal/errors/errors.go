@@ -61,3 +61,19 @@ func NewValidationError(message string) *ValidationError {
 		Message: message,
 	}
 }
+
+// UnauthorizedError represents an authentication or authorization failure
+type UnauthorizedError struct {
+	Message string
+}
+
+func (e *UnauthorizedError) Error() string {
+	return e.Message
+}
+
+// NewUnauthorizedError creates a new unauthorized error
+func NewUnauthorizedError(message string) *UnauthorizedError {
+	return &UnauthorizedError{
+		Message: message,
+	}
+}
