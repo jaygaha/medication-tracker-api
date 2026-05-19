@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/jaygaha/medication-tracker-api/internal/config"
 	"github.com/jaygaha/medication-tracker-api/internal/handler"
 	"github.com/jaygaha/medication-tracker-api/internal/middleware"
 )
@@ -32,15 +33,26 @@ func SetupRouter(
 	drugInteractionHandler *handler.DrugInteractionHandler,
 	deviceTokenHandler *handler.DeviceTokenHandler,
 	userHandler *handler.UserHandler,
+	authHandler *handler.AuthHandler,
+	cfg *config.Config,
 ) *gin.Engine {
 	gin.SetMode(gin.DebugMode)
 
 	router := gin.Default()
 
-	// Group routes -> /api/v1
-	api := router.Group("/api/v1", middleware.AttachUserMiddleware())
+	// Public routes
+	publicApi := router.Group("/api/v1")
+	publicApi.GET("/health", HealthCheck)
 
-	api.GET("/health", HealthCheck)
+	// Auth routes
+	auth := publicApi.Group("/auth")
+	{
+		auth.POST("/register", authHandler.Register)
+		auth.POST("/login", authHandler.Login)
+	}
+
+	// Protected routes -> /api/v1
+	api := router.Group("/api/v1", middleware.AuthMiddleware(cfg))
 
 	// Medication Routes
 	meds := api.Group("/medications")

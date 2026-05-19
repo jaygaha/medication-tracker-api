@@ -11,6 +11,8 @@ import (
 type UserRepository interface {
 	GetUserProfile(ctx context.Context, userID string) (*models.User, error)
 	UpdateUserProfile(ctx context.Context, userID string, req *models.UpdateUserRequest) (*models.User, error)
+	CreateUser(ctx context.Context, user *models.User) error
+	GetUserByEmail(ctx context.Context, email string) (*models.User, error)
 }
 
 type userRepository struct {
@@ -61,6 +63,43 @@ func (r *userRepository) UpdateUserProfile(ctx context.Context, userID string, r
 		&user.ID, &user.FirstName, &user.LastName, &user.Email, &user.Timezone, &user.NotificationPreference, &user.UpdatedAt,
 	)
 	if err != nil {
+		return nil, err
+	}
+
+	return &user, nil
+}
+
+func (r *userRepository) CreateUser(ctx context.Context, user *models.User) error {
+	query := `
+		INSERT INTO users (first_name, last_name, email, password_hash, timezone, notification_preference)
+		VALUES ($1, $2, $3, $4, $5, $6)
+		RETURNING id, created_at, updated_at
+	`
+	err := r.DB.QueryRowContext(ctx, query,
+		user.FirstName, user.LastName, user.Email, user.PasswordHash, user.Timezone, user.NotificationPreference,
+	).Scan(&user.ID, &user.CreatedAt, &user.UpdatedAt)
+	
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (r *userRepository) GetUserByEmail(ctx context.Context, email string) (*models.User, error) {
+	query := `
+		SELECT id, first_name, last_name, email, password_hash, timezone, notification_preference
+		FROM users
+		WHERE email = $1 AND deleted_at IS NULL
+	`
+
+	var user models.User
+	err := r.DB.QueryRowContext(ctx, query, email).Scan(
+		&user.ID, &user.FirstName, &user.LastName, &user.Email, &user.PasswordHash, &user.Timezone, &user.NotificationPreference,
+	)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, nil // Return nil, nil to indicate not found vs a real error
+		}
 		return nil, err
 	}
 
